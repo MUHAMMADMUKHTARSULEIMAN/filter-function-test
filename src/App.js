@@ -80,9 +80,43 @@ function App() {
       return {
         ...prevForm,
         [name]: value
-      }
-    })
-  }
+      };
+    });
+  };
+
+  const uncompletedTasks = tasks.filter(t => !t.done).map(task => {
+    return (
+      <Task
+      text={task.text}
+      taskId={task.id}
+      done={task.done}
+      edit={task.edit}
+      editTask={editTask}
+      toggleDone={toggleDone}
+      deleteTask={deleteTask}
+      />
+    );
+  });
+
+  const completedTasks = tasks.filter(t => t.done).map(task => {
+    return (
+      <Task
+      text={task.text}
+      taskId={task.id}
+      done={task.done}
+      edit={task.edit}
+      editTask={editTask}
+      toggleDone={toggleDone}
+      deleteTask={deleteTask}
+      />
+    );
+  });
+
+  return (
+    <div>
+
+    </div>
+  )
 };
 
 
