@@ -1,5 +1,6 @@
 import {useState, useReducer} from "react";
 import Task from "./components/Task";
+import AddTask from "./components/AddTask";
 
 const initialTasks = [];
 let setId = 0;
@@ -84,7 +85,7 @@ function App() {
     });
   };
 
-  const uncompletedTasks = tasks.filter(t => !t.done).map(task => {
+  const pendingTasks = tasks.filter(t => !t.done).map(task => {
     return (
       <Task
       text={task.text}
@@ -114,7 +115,19 @@ function App() {
 
   return (
     <div>
-
+      <AddTask
+      text={form.text}
+      addTask={addTask}
+      handleChange={handleChange}
+      />
+      <div>
+        <h1>Pending</h1>
+        {pendingTasks}
+      </div>
+      <div>
+        <h1>Completed</h1>
+        {completedTasks}
+      </div>
     </div>
   )
 };
