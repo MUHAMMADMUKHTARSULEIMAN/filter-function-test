@@ -5,29 +5,30 @@ import AddTask from "./components/AddTask";
 const initialTasks = [];
 let setId = 0;
 
-function tasksReducer(state, action) {
+function tasksReducer(tasks, action) {
   switch(action.type) {
     case "create": {
-      state.push({
-        id: action.id,
-        text: action.text,
-        done: false,
-        edit: false
-      });
-      break;
+      return [
+        ...tasks, {
+          id: action.id,
+          text: action.text,
+          done: false,
+          edit: false
+        }
+      ]
     }
     case "delete": {
-      return state.filter(t => t.id !== action.id);
+      return tasks.filter(t => t.id !== action.id);
     }
     case "done": {
-      const toggle = state.find(t => t.id === action.id);
-      toggle.done = !toggle.done;
-      break;
+      return tasks.map(task => {
+        return task.id === action.id ? {...task, done: !task.done} : task;
+      });
     }
     case "edit": {
-      const toggle = state.find(t => t.id === action.id);
-      toggle.edit = !toggle.edit;
-      break;
+      return tasks.map(task => {
+        return task.id === action.id ? {...task, edit: !task.edit} : task;
+      });
     }
     default: {
       throw Error(`Unknown action: ${action.type}`)
@@ -37,37 +38,6 @@ function tasksReducer(state, action) {
 
 function App() {
   const [tasks, dispatch] = useReducer(tasksReducer, initialTasks);
-
-  const toggleDone = taskId => {
-    dispatch({
-      type: "done",
-      id: taskId
-    });
-  };
-
-  const editTask = taskId => {
-    dispatch({
-      type: "edit",
-      id: taskId
-    });
-  };
-
-  const addTask = e => {
-    e.preventDefault();
-
-    dispatch({
-      type: "create",
-      id: setId++,
-      text: ""
-    });
-  };
-
-  const deleteTask = taskId => {
-    dispatch({
-      type: "delete",
-      id: taskId
-    });
-  };
 
   const [form, setForm] = useState({
     text: ""
@@ -85,7 +55,64 @@ function App() {
     });
   };
 
-  const pendingTasks = tasks.filter(t => !t.done).map(task => {
+  const [pendingTasks, setPendingTasks] = useState(tasks);
+  const [completedTasks, setCompletedTasks] =useState(tasks);
+
+  const toggleDone = taskId => {
+    dispatch({
+      type: "done",
+      id: taskId
+    });
+  };
+
+  const editTask = taskId => {
+    dispatch({
+      type: "edit",
+      id: taskId
+    });
+
+    setPendingTasks(prevTasks => {
+      return prevTasks.filter(task => task.done === false);
+    });
+
+    setCompletedTasks(prevTasks => {
+      return prevTasks.filter(task => task.done === true);
+    });
+  };
+
+  const addTask = e => {
+    e.preventDefault();
+
+    dispatch({
+      type: "create",
+      id: setId++,
+      text: form.text
+    });
+
+    setForm(prevForm => {
+      return {
+        ...prevForm,
+        text: ""
+      };
+    });
+
+    setPendingTasks(prevTasks => {
+      return prevTasks.filter(task => !task.done);
+    });
+
+    setCompletedTasks(prevTasks => {
+      return prevTasks.filter(task => task.done);
+    });
+  };
+
+  const deleteTask = taskId => {
+    dispatch({
+      type: "delete",
+      id: taskId
+    });
+  };
+
+  const mapppedPendingTasks = pendingTasks.map(task => {
     return (
       <Task
       text={task.text}
@@ -99,7 +126,7 @@ function App() {
     );
   });
 
-  const completedTasks = tasks.filter(t => t.done).map(task => {
+  const mappedCompletedTasks = completedTasks.map(task => {
     return (
       <Task
       text={task.text}
@@ -115,23 +142,28 @@ function App() {
 
   return (
     <div>
+      <form>
+        <input name="text" id="text" type="text" value={form.text} placeholder="Add task" onChange={handleChange} />
+        <button onClick={addTask}>Add task</button>
+      </form>
+
       <AddTask
       text={form.text}
       addTask={addTask}
       handleChange={handleChange}
       />
+
       <div>
         <h1>Pending</h1>
-        {pendingTasks}
+        {mapppedPendingTasks}
       </div>
+
       <div>
         <h1>Completed</h1>
-        {completedTasks}
+        {mappedCompletedTasks}
       </div>
     </div>
   )
 };
-
-
 
 export default App;
