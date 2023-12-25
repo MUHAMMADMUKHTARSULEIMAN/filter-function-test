@@ -15,7 +15,7 @@ function tasksReducer(tasks, action) {
           done: false,
           edit: false
         }
-      ]
+      ];
     }
     case "delete": {
       return tasks.filter(t => t.id !== action.id);
@@ -31,7 +31,7 @@ function tasksReducer(tasks, action) {
       });
     }
     default: {
-      throw Error(`Unknown action: ${action.type}`)
+      throw Error(`Unknown action: ${action.type}`);
     }
   }
 }
