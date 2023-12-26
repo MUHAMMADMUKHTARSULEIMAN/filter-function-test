@@ -1,50 +1,52 @@
-import {useState, useReducer} from "react";
-import Task from "./components/Task";
+import {useState} from "react";
+import {useImmerReducer} from "use-immer";
 import AddTask from "./components/AddTask";
+import Task from "./components/Task";
 
-const initialTasks = [];
 let setId = 0;
+const initialTasks = [];
 
-function tasksReducer(tasks, action) {
+
+function taskReducer(draft, action) {
   switch(action.type) {
     case "create": {
-      return [
-        ...tasks, {
-          id: action.id,
-          text: action.text,
-          done: false,
-          edit: false
-        }
-      ];
-    }
-    case "delete": {
-      return tasks.filter(t => t.id !== action.id);
+      draft.push({
+        id: action.id,
+        text: action.text,
+        done: false,
+        edit: false
+      });
+      break;
     }
     case "done": {
-      return tasks.map(task => {
-        return task.id === action.id ? {...task, done: !task.done} : task;
-      });
+      const toggle = draft.find(t => t.id === action.id)
+      toggle.done = !toggle.done;
+      break;
     }
     case "edit": {
-      return tasks.map(task => {
-        return task.id === action.id ? {...task, edit: !task.edit} : task;
-      });
+      const toggle = draft.find(t => t.id === action.id)
+      toggle.edit = !toggle.edit;
+      break;
+    }
+    case "delete": {
+      return draft.filter(t => t.id !== action.id);
     }
     default: {
       throw Error(`Unknown action: ${action.type}`);
     }
   }
-}
+};
+
+  
 
 function App() {
-  const [tasks, dispatch] = useReducer(tasksReducer, initialTasks);
+  const [tasks, dispatch] = useImmerReducer(taskReducer, initialTasks);
 
   const [form, setForm] = useState({
     text: ""
   });
 
-
-  const handleChange = e => {
+  const handleChange = (e) => {
     const {name, value} = e.target;
 
     setForm(prevForm => {
@@ -55,32 +57,22 @@ function App() {
     });
   };
 
-  const [pendingTasks, setPendingTasks] = useState(tasks);
-  const [completedTasks, setCompletedTasks] =useState(tasks);
+  // const [editForm, setEditForm] = useState({
+  //   editText: ""
+  // });
 
-  const toggleDone = taskId => {
-    dispatch({
-      type: "done",
-      id: taskId
-    });
-  };
+  // const handleEditChange = (e) => {
+  //   const {name, value} = e.target;
 
-  const editTask = taskId => {
-    dispatch({
-      type: "edit",
-      id: taskId
-    });
+  //   setEditForm(prevForm => {
+  //     return {
+  //       ...prevForm,
+  //       [name]: value
+  //     };
+  //   });
+  // };
 
-    setPendingTasks(prevTasks => {
-      return prevTasks.filter(task => task.done === false);
-    });
-
-    setCompletedTasks(prevTasks => {
-      return prevTasks.filter(task => task.done === true);
-    });
-  };
-
-  const addTask = e => {
+  const addTask = (e) => {
     e.preventDefault();
 
     dispatch({
@@ -92,78 +84,94 @@ function App() {
     setForm(prevForm => {
       return {
         ...prevForm,
-        text: ""
+        text: "",
       };
-    });
-
-    setPendingTasks(prevTasks => {
-      return prevTasks.filter(task => !task.done);
-    });
-
-    setCompletedTasks(prevTasks => {
-      return prevTasks.filter(task => task.done);
     });
   };
 
-  const deleteTask = taskId => {
+  const toggleDone = (taskId) => {
     dispatch({
-      type: "delete",
+      type: "done",
       id: taskId
     });
   };
 
-  const mapppedPendingTasks = pendingTasks.map(task => {
+  const deleteTask = (taskId) => {
+    const answer = window.confirm('Do you want to proceed with this action?');
+    if(answer) {
+      dispatch({
+        type: "delete",
+        id: taskId
+      });
+    };
+  };
+
+  const editTask = (taskId) => {
+    dispatch({
+      type: "edit",
+      id: taskId
+    });
+  };
+
+  const allTasks = tasks.map(task => {
     return (
       <Task
-      text={task.text}
+      key={task.id}
       taskId={task.id}
+      text={task.text}
       done={task.done}
       edit={task.edit}
       editTask={editTask}
       toggleDone={toggleDone}
       deleteTask={deleteTask}
-      />
+      /> 
     );
   });
 
-  const mappedCompletedTasks = completedTasks.map(task => {
-    return (
-      <Task
-      text={task.text}
-      taskId={task.id}
-      done={task.done}
-      edit={task.edit}
-      editTask={editTask}
-      toggleDone={toggleDone}
-      deleteTask={deleteTask}
-      />
-    );
-  });
+  // const pendingTasks = tasks.map(task => {
+  //   return !task.done ? 
+  //   <PendingTask
+  //   key={task.id}
+  //   taskId={task.id}
+  //   text={task.text}
+  //   done={task.done}
+  //   edit={task.edit}
+  //   editTask={editTask}
+  //   toggleDone={toggleDone}
+  //   deleteTask={deleteTask}
+  //   /> :
+  //   "";
+  // });
+
+  // const completedTasks = tasks.map(task => {
+  //   return task.done ? 
+  //   <PendingTask
+  //   key={task.id}
+  //   taskId={task.id}
+  //   text={task.text}
+  //   done={task.done}
+  //   edit={task.edit}
+  //   editTask={editTask}
+  //   toggleDone={toggleDone}
+  //   deleteTask={deleteTask}
+  //   /> :
+  //   "";
+  // });
 
   return (
-    <div>
-      <form>
-        <input name="text" id="text" type="text" value={form.text} placeholder="Add task" onChange={handleChange} />
-        <button onClick={addTask}>Add task</button>
-      </form>
-
+    <div id="app">
+      <h1 id="heading">To-do List</h1>
       <AddTask
       text={form.text}
-      addTask={addTask}
       handleChange={handleChange}
+      addTask={addTask}
       />
 
-      <div>
-        <h1>Pending</h1>
-        {mapppedPendingTasks}
-      </div>
-
-      <div>
-        <h1>Completed</h1>
-        {mappedCompletedTasks}
+      <div id="all-tasks-container">
+        {allTasks}
       </div>
     </div>
-  )
-};
+  );
+}
 
 export default App;

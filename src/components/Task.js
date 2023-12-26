@@ -1,4 +1,4 @@
-import {useState} from "react";
+import { useState } from "react";
 
 function Task(props) {
   const [form, setForm] = useState({
@@ -17,30 +17,29 @@ function Task(props) {
   };
 
   return (
-    <div>
-      <p>{props.taskId}</p>
+    <div id="task-container">
       {!props.edit ?
-      <div><p>{form.editText}</p></div> :
-      <div><input name="editText" id="editText" type="text" value={form.editText} onChange={handleChange}/></div>
+      <div id="text-container"><p>{form.editText}</p></div> :
+      <div id="input-container"><input name="editText" id="edit-text" type="text" value={form.editText} onChange={handleChange}/></div>
       }
 
-      <div>
+      <div id="buttons-container">
         {props.done ?
         "" :
-        <button onClick={() => {props.editTask(props.taskId)}}>{props.edit ? "Save" : "Edit"}</button>
+        <button className="task-button" onClick={() => {props.editTask(props.taskId)}}>{props.edit ? "Save" : "Edit"}</button>
         }
         {props.edit ?
         "" :
-          <button onClick={() => {props.deleteTask(props.taskId)}}>Delete</button>
+          <button className="task-button" onClick={() => {props.deleteTask(props.taskId)}}>Delete</button>
         }
         {props.edit ?
         "" :
-          <button onClick={() => {props.toggleDone(props.taskId)}}>{props.done ? "Resume" : "Done"}</button>
+          <button className="task-button" onClick={() => {props.toggleDone(props.taskId)}}>{props.done ? "Resume" : "Done"}</button>
         }
       </div>
 
       {props.done ?
-      <div>
+      <div id="completed-indicator">
         <h3>Completed</h3>
       </div> :
       ""
